@@ -177,14 +177,25 @@ C lsort = index for each orbital (0 : not include / 1 : include / 2 : correlated
 C lnreps = number of irreducible representations for each orbital, table from 0 to lmax, from 1 to nsort (temporary variables)
 C correps = index for each irreducible representations of the correlated orbital, table from 1 to lnreps(l,isrt), from 0 to lmax, from 1 to nsort (temporary variable)
 C ifSOflag = table of correspondance isort -> optionSO (1 or 0). Only used for isort with correlated orbitals
-        READ(iuinp,*) e_bot,e_top
+C       READ(iuinp,*) e_bot,e_top
+        READ(iuinp,'(a)')buf
+        ifBRANGE=.FALSE.
+        IF(buf(1:6)=='brange') THEN
+            ifBRANGE=.TRUE.
+            READ(buf(7:),*) b_bot,b_top
+        ELSE
+            READ(buf,*) e_bot,e_top
+        ENDIF
+
 C e_bot, e_top : lower and upper limits of the energy window
 C
 C ---------------------------------------------------------------------------------------
 C Interruption of the prgm if the energy window is not well-defined.
 C -------------------------
 C
-        IF(e_bot.gt.e_top) THEN
+        IF((ifBRANGE.AND.(b_bot>b_top)).OR.
+     &                  (.NOT.ifBRANGE.AND.(e_bot.gt.e_top))) THEN
+C        IF(e_bot.gt.e_top) THEN
          WRITE(buf,'(a,a)')' The energy window ',
      &     ' is ill-defined.'
          CALL printout(0)
@@ -372,10 +383,21 @@ C the field crorb%ifSOflag = boolean (if SO are used or not)
         ENDDO        ! End of the isrt loop
 C
 C Printing the size of the Energy window
+C        CALL printout(0)
+C        WRITE(buf,'(2(a,f10.5),a)')
+C     &     'The Eigenstates are projected in an energy window from ',
+C     &        e_bot,' Ry  to  ',e_top,' Ry around the Fermi level.'
+C        CALL printout(1)
         CALL printout(0)
-        WRITE(buf,'(2(a,f10.5),a)')
+        IF(.NOT.ifBRANGE) THEN
+          WRITE(buf,'(2(a,f10.5),a)')
      &     'The Eigenstates are projected in an energy window from ',
      &        e_bot,' Ry  to  ',e_top,' Ry around the Fermi level.'
+        ELSE
+          WRITE(buf,'(2(a,I5))')
+     &     'The Eigenstates are projected in the range of bands from ',
+     &        b_bot,' to  ',b_top
+        ENDIF
         CALL printout(1)
 C
 C =======================================================================================
@@ -657,7 +679,12 @@ C
 C ----------------------------------------
 C Setting up the projections for all bands
 C ----------------------------------------
-        CALL set_projections(-Elarge,Elarge)
+C       CALL set_projections(-Elarge,Elarge)
+        IF (.NOT.ifBRANGE) THEN
+            CALL set_projections(-Elarge,Elarge,0,0)
+        ELSE
+            CALL set_projections(0.0,0.0,1,10000000)
+        ENDIF
 
 
 C Elarge is an energy variable equal to 1.d6 Rydberg (very large !!!)
@@ -689,7 +716,13 @@ C
 C ----------------------------------------
 C Setting up the projections for all bands
 C ----------------------------------------
-         CALL set_projections(-Elarge,e_bot)
+C        CALL set_projections(-Elarge,e_bot)
+        IF (.NOT.ifBRANGE) THEN
+            CALL set_projections(-Elarge,e_bot,0,0)
+        ELSE
+            CALL set_projections(0.0,0.0,1,b_bot-1)
+        ENDIF
+
 C
 C ---------------------------------------------------------
 C Computation of the density matrices and the total charges
@@ -716,7 +749,12 @@ C
 C ----------------------------------------
 C Setting up the projections for all bands
 C ----------------------------------------
-         CALL set_projections(e_bot,e_top)
+C        CALL set_projections(e_bot,e_top)
+        IF (.NOT.ifBRANGE) THEN
+            CALL set_projections(e_bot,e_top,0,0)
+        ELSE
+            CALL set_projections(0.0,0.0,b_bot,b_top)
+        ENDIF
 C
 C ------------------------------------------------------------------------------
 C Orthonormalization of the projectors for correlated orbitals P(icrorb,ik,is) :
@@ -745,10 +783,10 @@ C Writing the output files for DMFT computations :
 C ------------------------------------------------ 
          IF(.NOT.ifBAND) THEN
           CALL outqmc(elecn,qtot)
-          CALL outbwin
          ELSE
           CALL outband
          ENDIF
+         CALL outbwin
         ENDIF
 C End of the prgm
         CALL printout(0)

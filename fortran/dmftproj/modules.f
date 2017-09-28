@@ -63,12 +63,14 @@ C        CHARACTER(len=*), PARAMETER :: wien_path=
 C     &    '/workpmc/martins/DMFTprojectors/newDMFTproj'
         CHARACTER(len=250) :: wien_path
         INTEGER :: natom, nsort, lmax, nlm, ns, nsp
+        INTEGER :: b_bot, b_top
         INTEGER, DIMENSION(:), ALLOCATABLE :: isort
         INTEGER, DIMENSION(:), ALLOCATABLE :: nmult
         INTEGER, DIMENSION(:,:), ALLOCATABLE :: lsort
         INTEGER, DIMENSION(:), ALLOCATABLE :: ifSOflag
         INTEGER, DIMENSION(:), ALLOCATABLE :: timeflag
         LOGICAL :: ifSO, ifSP, ifBAND
+        LOGICAL :: ifBRANGE
         LOGICAL, DIMENSION(:), ALLOCATABLE :: notinclude
         REAL(KIND=8) :: eferm
         REAL(KIND=8) :: e_bot, e_top

@@ -37,7 +37,7 @@ C ----------------------------
         USE prnt
         IMPLICIT NONE
         CHARACTER(len=150) :: fullpath
-        CHARACTER(len=250) :: buf1
+        CHARACTER(len=400) :: buf1
         CHARACTER(len=25) :: basis_file
         CHARACTER(len=1) :: repsign
         INTEGER, DIMENSION(2*(2*lmax+1)) :: degrep
@@ -196,7 +196,7 @@ C Finding the different ireps in the new basis (a "*" means the end of an irep)
                  degrep(irep)=m-ind+1
                  ind=m+1
                 ENDIF
-                READ(buf1(2:250),*)(rtrans(m1),itrans(m1),
+                READ(buf1(2:400),*)(rtrans(m1),itrans(m1),
      &            m1=1,2*(2*l+1))
                 tempmat(1:2*(2*l+1),m)=
      =            CMPLX(rtrans(1:2*(2*l+1)),itrans(1:2*(2*l+1)))
